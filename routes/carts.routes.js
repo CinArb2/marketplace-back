@@ -6,7 +6,8 @@ const {
   purchaseCart,
   updateCart,
   deleteProductCart,
-  getProductsInCart
+  getProductsInCart,
+  emptyCart
 } = require('../controllers/carts.controllers')
 
 const {
@@ -45,6 +46,11 @@ router.patch('/update-cart',
 router.delete('/:productId',
   cartActiveExist,
   deleteProductCart)
+
+router.delete('/',
+  cartActiveExist,
+  emptyCart
+)
 
 router.post('/purchase',
   cartActiveExist, 

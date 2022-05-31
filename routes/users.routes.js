@@ -8,7 +8,8 @@ const {
   getUserOrders,
   getOrderById,
   getAllUsers,
-  getUserById
+  getUserById,
+  getCurrentUser
 } = require('../controllers/users.controllers')
 
 const {
@@ -37,7 +38,7 @@ router.post('/login', login)
 
 router.use('/', protectToken)
 
-router.get('/', getAllUsers)
+router.get('/', getCurrentUser)
 
 router.patch('/:id',
   upload.single('avatarImg'),

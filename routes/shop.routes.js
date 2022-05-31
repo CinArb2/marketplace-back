@@ -6,7 +6,8 @@ const {
   getShopByID,
   getShopProducts,
   updateShop,
-  deleteShop
+  deleteShop,
+  getCurrentShop
 } = require('../controllers/shop.controllers')
 
 const {
@@ -27,11 +28,13 @@ const cpUpload = upload.fields([
   { name: 'logoImg', maxCount: 1 },
   {name: 'coverImg', maxCount: 1}])
   
-router.get('/', getShops)
+
 router.get('/products/:id', shopExist, getShopProducts)
 router.get('/:id', shopExist, getShopByID)
 
 router.use('/', protectToken)
+
+router.get('/', getCurrentShop)
   
 router.post('/',
   cpUpload, 

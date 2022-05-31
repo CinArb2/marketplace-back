@@ -1,8 +1,12 @@
 require('dotenv').config()
+const { ref, uploadBytes, getDownloadURL } = require('firebase/storage');
+
+const { storage } = require('../utils/firebase');
 
 const { Product } = require('../models/product.model')
 const { Shop } = require('../models/shop.model')
 const { ProductImg } = require('../models/productImg.model')
+
 
 const { AppError } = require('../utils/appError')
 const { catchAsync } = require('../utils/catchAsync')
@@ -12,12 +16,25 @@ const productExists = catchAsync(async (req, res, next) => {
 
   const product = await Product.findOne({
     where: { id, status: 'active' },
-    include: { model: ProductImg }
+    include: [
+      { model: Shop },
+      { model: ProductImg }
+    ]
   })
-
+  
   if (!product) {
     return next(new AppError('Product doesn\'t exist with given Id', 404))
   }
+
+  // Get url from firebase
+  const imgRefLogo = ref(storage, product.shop.logoImg);
+  const imgRefCover = ref(storage, product.shop.coverImg);
+
+  const urlLogo = await getDownloadURL(imgRefLogo);
+  const urlCover = await getDownloadURL(imgRefCover);
+
+  product.shop.logoImg = urlLogo;
+  product.shop.coverImg = urlCover;
   
   req.product = product
   next()

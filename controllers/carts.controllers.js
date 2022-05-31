@@ -203,11 +203,37 @@ const getCart = catchAsync(async (req, res, next) => {
   })
 })
 
+const emptyCart = catchAsync(async (req, res, next) => {
+  const { cart } = req
+
+  const activeProductsCart = await ProductInCart.findAll({
+    where: {
+      status: 'active',
+      cartId: cart.id
+    }
+  })
+
+  if (!activeProductsCart) {
+    return next(new AppError('not products in cart', 404))
+  }
+  
+  const promiseArray = activeProductsCart.map( async (prod) => {
+    await prod.update({ status: 'removed' })
+    
+    return prod
+  })
+
+  await Promise.all(promiseArray)
+  
+  res.status(200).json({ status: 'success' })
+})
+
 module.exports = {
   getCart,
   addProductCart,
   purchaseCart,
   updateCart,
   deleteProductCart,
-  getProductsInCart
+  getProductsInCart,
+  emptyCart
 }

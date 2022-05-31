@@ -1,6 +1,7 @@
 
 const express = require('express')
 const rateLimit = require('express-rate-limit')
+const cors = require('cors')
 require('dotenv').config()
 
 // Controllers
@@ -14,6 +15,9 @@ const { productRouter } = require('./routes/products.routes')
 
 // Init express app
 const app = express()
+
+//Enable cors
+app.use(cors())
 
 // Enable incoming JSON data
 app.use(express.json())

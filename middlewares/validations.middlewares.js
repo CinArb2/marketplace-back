@@ -52,8 +52,8 @@ const productValidations = [
   body('description')
     .notEmpty()
     .withMessage('Description cannot be empty')
-    .isLength({ max: 100 })
-    .withMessage('comments must be maximum 100 characters'),
+    .isLength({ max: 1000 })
+    .withMessage('description must be maximum 100 characters'),
   body('price')
     .notEmpty()
     .withMessage('Price cannot be empty')

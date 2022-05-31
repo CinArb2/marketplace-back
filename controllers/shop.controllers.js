@@ -6,6 +6,7 @@ const { ref, uploadBytes, getDownloadURL } = require('firebase/storage');
 const { User } = require('../models/user.model')
 const { Shop } = require('../models/shop.model')
 const { Product } = require('../models/product.model')
+const { ProductImg } = require('../models/productImg.model')
 
 
 const { catchAsync } = require('../utils/catchAsync')
@@ -89,16 +90,39 @@ const getShopByID = catchAsync(async (req, res, next) => {
 
 const getShopProducts = catchAsync(async (req, res, next) => {
   const { shop } = req
-
+  
   const shopProducts = await Product.findAll({
-    where: { shopId: shop.id }
+    where: { shopId: shop.id, status: 'active' },
+    include: [
+      { model: ProductImg }
+    ]
   })
 
   if (!shopProducts) {
     return next(new AppError('no products for this user', 400))
   }
 
-  res.status(201).json({ shopProducts })
+  const productPromises = shopProducts.map(async product => {
+    // Get imgs from firebase
+    const prodImgsPromises = product.productImgs.map(async prodImg => {
+      const imgRef = ref(storage, prodImg.imgUrl);
+      const url = await getDownloadURL(imgRef);
+
+      // Update postImgUrl prop
+      prodImg.imgUrl = url;
+      return prodImg;
+    });
+
+    // Resolve pending promises
+    const prodImgsResolved = await Promise.all(prodImgsPromises);
+    product.productImgs = prodImgsResolved;
+
+    return product;
+  });
+
+  const productResolved = await Promise.all(productPromises);
+
+  res.status(201).json({ shopProducts: productResolved })
 })
 
 const updateShop = catchAsync(async (req, res, next) => {
@@ -154,11 +178,47 @@ const deleteShop = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success' })
 })
 
+const getCurrentShop = catchAsync(async (req, res, next) => {
+  const { userSession } = req
+  const { user } = req.query
+  let shop;
+
+  if (user === 'me') {
+    shop = await Shop.findOne({
+      where: {
+        userId: userSession.id,
+        status: 'active'
+      }
+    })
+  }
+
+  if (!shop) {
+    return next(new AppError('User doesnt have a shop', 404))
+  }
+
+  // Get url from firebase
+  const imgRefLogo = ref(storage, shop.logoImg);
+  const imgRefCover = ref(storage, shop.coverImg);
+
+  const urlLogo = await getDownloadURL(imgRefLogo);
+  const urlCover = await getDownloadURL(imgRefCover);
+
+  shop.logoImg = urlLogo;
+  shop.coverImg = urlCover;
+
+  if (!shop) {
+    return next(new AppError('user doesnt have any active shop', 404))
+  }
+
+  res.status(200).json({ shop })
+ })
+
 module.exports = {
   createShop,
   getShops,
   getShopByID,
   getShopProducts,
   updateShop,
-  deleteShop
+  deleteShop,
+  getCurrentShop
 }

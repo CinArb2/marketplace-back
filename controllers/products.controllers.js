@@ -57,8 +57,20 @@ const createProduct = catchAsync(async (req, res, next) => {
 })
 
 const getListProducts = catchAsync(async (req, res, next) => {
+  const { category } = req.query
+  
+  const whereClause = category
+    ? {
+      status: 'active',
+      categoryId: category
+    }
+    : {
+      status: 'active'
+    }
+  
+  
   const productList = await Product.findAll({
-    where: { status: 'active' },
+    where: whereClause,
     include: [
       { model: ProductImg }
     ]
@@ -118,9 +130,33 @@ const getProductById = catchAsync(async (req, res, next) => {
 const updateProduct = catchAsync(async (req, res, next) => {
   const { product } = req
   const { title, description, quantity, price } = req.body
+  
+  await product.update({ title, description, quantity, price })
+  
+  if (req.files) {
+    // Map through the files and upload them to firebase
+    const productImgsPromises = req.files.map(async (file, index) => {
+      // Create img ref
+      const imgRef = ref(
+        storage,
+        `products/${product.id}-${Date.now()}-${file.originalname}`
+      );
 
-  await product.update({ title, description, quantity, price  })
+      // Use uploadBytes
+      const imgUploaded = await uploadBytes(imgRef, file.buffer);
 
+      // Create a new ProductImg instance (ProductImg.create)
+      
+     
+      console.log(req.files.length)
+      return await product.productImgs[index].update({
+        imgUrl: imgUploaded.metadata.fullPath,
+      });
+    });
+
+    // Resolve the pending promises
+    await Promise.all(productImgsPromises);
+  }
   res.status(200).json({ status: 'success' })
 })
 
@@ -131,6 +167,7 @@ const deleteProduct = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ status: 'success' })
 })
+
 
 module.exports = {
   createProduct,

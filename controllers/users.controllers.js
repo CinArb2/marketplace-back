@@ -165,6 +165,17 @@ const getOrderById = catchAsync(async (req, res, next) => {
   res.status(200).json({ userOrders })
 })
 
+const getCurrentUser = catchAsync(async (req, res, next) => {
+  const { userSession } = req
+
+  // Get url from firebase
+  const imgRef = ref(storage, userSession.avatarImg);
+  const url = await getDownloadURL(imgRef);
+
+  userSession.avatarImg = url;
+
+  res.status(200).json({ userSession })
+})
 
 module.exports = {
   signup,
@@ -174,5 +185,6 @@ module.exports = {
   getUserOrders,
   getOrderById,
   getAllUsers,
-  getUserById
+  getUserById,
+  getCurrentUser
 }

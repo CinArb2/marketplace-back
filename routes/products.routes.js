@@ -48,6 +48,7 @@ router.post('/',
   createProduct)
 
 router.patch('/:id',
+  upload.array('productImgs', 3),
   productExists,
   protectProductOwner,
   updateProdValidations,

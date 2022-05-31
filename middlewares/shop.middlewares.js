@@ -9,7 +9,7 @@ const { catchAsync } = require('../utils/catchAsync')
 
 const shopExist = catchAsync(async (req, res, next) => {
   const { id } = req.params
-
+  
   const shop = await Shop.findOne({
     where: { id, status: 'active' }
   })
