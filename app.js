@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Limit IP requests
 const limiter = rateLimit({
-  max: 10000000,
+  max: 10000,
   windowMs: 1 * 60 * 60 * 1000, // 1 hr
   message: 'Too many requests from this IP'
 })

@@ -14,10 +14,6 @@ const cartActiveExist = catchAsync(async (req, res, next) => {
     where: { userId: userSession.id, status: 'active' }
   })
 
-  if (!cart) {
-    return next(new AppError('user doesnt have a cart active', 404))
-  }
-
   req.cart = cart
   next()
 })

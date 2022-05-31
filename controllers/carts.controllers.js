@@ -185,6 +185,11 @@ const purchaseCart = catchAsync(async (req, res, next) => {
 //estas son rutas para hacer test 
 const getProductsInCart = catchAsync(async (req, res, next) => {
   const { cart } = req
+
+  if (!cart) {
+    return next(new AppError('user doesnt have a cart active', 404))
+  }
+
   let productInCArt = await ProductInCart.findAll({
     where: { status: 'active', cartId: cart.id },
     include: [
