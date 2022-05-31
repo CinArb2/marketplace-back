@@ -184,7 +184,12 @@ const purchaseCart = catchAsync(async (req, res, next) => {
 
 //estas son rutas para hacer test 
 const getProductsInCart = catchAsync(async (req, res, next) => {
-  let productInCArt = await ProductInCart.findAll()
+  const { cart } = req
+  let productInCArt = await ProductInCart.findAll({
+    where: { status: 'active', cartId: cart.id },
+    include: [
+      { model: Product }]
+  })
 
   res.status(200).json({
     productInCArt

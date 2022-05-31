@@ -29,7 +29,7 @@ const router = express.Router()
 
 router.use('/', protectToken)
 
-router.get('/', getProductsInCart)
+router.get('/', cartActiveExist, getProductsInCart)
 
 router.post('/add-product',
   cartValidations,

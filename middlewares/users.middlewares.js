@@ -21,7 +21,8 @@ const protectToken = catchAsync(async (req, res, next) => {
   const decodedToken = await jwt.verify(token, process.env.JWT_SECRET)
 
   const userSession = await User.findOne({
-    where: { id: decodedToken.id, status: 'active' }
+    where: { id: decodedToken.id, status: 'active' },
+    attributes: { exclude: ['password'] }
   })
 
   if (!userSession) {
