@@ -38,7 +38,7 @@ const getUserById = catchAsync(async (req, res, next) => {
 
 const signup = catchAsync(async (req, res, next) => {
   const { username, email, password } = req.body
-  console.log(req.file)
+ 
   const imgRef = ref(storage, `users/${Date.now()}-${req.file.originalname}`);
   const imgUploaded = await uploadBytes(imgRef, req.file.buffer);
 

@@ -1,6 +1,7 @@
 
 require('dotenv').config()
 const { ref, uploadBytes, getDownloadURL } = require('firebase/storage');
+const { Op } = require("sequelize");
 
 const { Product } = require('../models/product.model')
 const { ProductImg } = require('../models/productImg.model')
@@ -58,19 +59,20 @@ const createProduct = catchAsync(async (req, res, next) => {
 
 const getListProducts = catchAsync(async (req, res, next) => {
   const { category } = req.query
-  
-  const whereClause = category
-    ? {
-      status: 'active',
-      categoryId: category
-    }
-    : {
-      status: 'active'
-    }
-  
+  const { search } = req.query
+      
+  const aditionalWhereClause =
+    category
+    ? {categoryId: category}
+     : search
+        ?{title: { [Op.iLike]: '%' + search + '%',}}
+        : {}
   
   const productList = await Product.findAll({
-    where: whereClause,
+    where: {
+      status: 'active',
+      ...aditionalWhereClause
+    },
     include: [
       { model: ProductImg }
     ]
@@ -147,8 +149,6 @@ const updateProduct = catchAsync(async (req, res, next) => {
 
       // Create a new ProductImg instance (ProductImg.create)
       
-     
-      console.log(req.files.length)
       return await product.productImgs[index].update({
         imgUrl: imgUploaded.metadata.fullPath,
       });

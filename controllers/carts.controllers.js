@@ -78,7 +78,7 @@ const updateCart = catchAsync(async (req, res, next) => {
   let productCart = await ProductInCart.findOne({
     where: {
       productId: product.id,
-      cartId: cart.id
+      cartId: cart.id,
     }
   })
 
@@ -155,6 +155,7 @@ const purchaseCart = catchAsync(async (req, res, next) => {
     const product = await Product.findOne({
       where: {
         id: el.productId,
+        status: 'active'
       }
     })
     

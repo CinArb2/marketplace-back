@@ -43,8 +43,11 @@ const productExists = catchAsync(async (req, res, next) => {
 const protectProductOwner = catchAsync(async (req, res, next) => {
   const { userSession, product } = req
 
-  const userShop = await Shop.findOne({
-    where: { userId: userSession.id }
+  const userShop = await Shop.findAll({
+    where: {
+      userId: userSession.id,
+      status: 'active'
+    }
   })
 
   if (userShop.id !== product.shopId) {
