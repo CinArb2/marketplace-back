@@ -48,26 +48,26 @@ const getShops = catchAsync(async (req, res, next) => {
     where: { status: 'active'}
   });
 
-  const shopPromises = shops.map(async shop => {
+  // const shopPromises = shops.map(async shop => {
 
-    // Create firebase img ref and get the full path
-    const imgRefLogo = ref(storage, shop.logoImg);
-    const imgRefCover = ref(storage, shop.coverImg);
+  //   // Create firebase img ref and get the full path
+  //   const imgRefLogo = ref(storage, shop.logoImg);
+  //   const imgRefCover = ref(storage, shop.coverImg);
 
-    const urlLogo = await getDownloadURL(imgRefLogo);
-    const urlCover = await getDownloadURL(imgRefCover);
+  //   const urlLogo = await getDownloadURL(imgRefLogo);
+  //   const urlCover = await getDownloadURL(imgRefCover);
 
-    shop.logoImg = urlLogo;
-    shop.coverImg = urlCover;
+  //   shop.logoImg = urlLogo;
+  //   shop.coverImg = urlCover;
 
-    return shop;
-  });
+  //   return shop;
+  // });
 
-  const shopResolved = await Promise.all(shopPromises);
+  // const shopResolved = await Promise.all(shopPromises);
 
   res.status(200).json({
-    shops: shopResolved,
-    
+    // shops: shopResolved,
+    shops
   });
 })
 
@@ -174,6 +174,22 @@ const updateShop = catchAsync(async (req, res, next) => {
 const deleteShop = catchAsync(async (req, res, next) => {
   const { shop } = req
 
+  const productsShop = await Product.findAll({
+    where: {
+      shopId: shop.id,
+      status: 'active'
+    }
+  })
+
+  if (productsShop.length > 0) {
+    const promiseArray = productsShop.map( async (el) => {
+      await el.update({
+        status: 'deleted',
+      })
+    })
+    await Promise.all(promiseArray )
+  }
+  
   await shop.update({ status: 'deleted' })
 
   res.status(200).json({ status: 'success' })

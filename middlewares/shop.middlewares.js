@@ -3,6 +3,7 @@ require('dotenv').config()
 
 // Models
 const { Shop } = require('../models/shop.model')
+const { Product } = require('../models/product.model')
 
 const { AppError } = require('../utils/appError')
 const { catchAsync } = require('../utils/catchAsync')
@@ -11,7 +12,10 @@ const shopExist = catchAsync(async (req, res, next) => {
   const { id } = req.params
   
   const shop = await Shop.findOne({
-    where: { id, status: 'active' }
+    where: {
+      id,
+      status: 'active',
+    }
   })
 
   if (!shop) {

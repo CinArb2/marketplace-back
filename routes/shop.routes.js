@@ -35,6 +35,7 @@ router.get('/:id', shopExist, getShopByID)
 router.use('/', protectToken)
 
 router.get('/', getCurrentShop)
+// router.get('/', getShops)
   
 router.post('/',
   cpUpload, 
