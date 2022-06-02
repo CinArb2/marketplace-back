@@ -139,7 +139,7 @@ const getUserOrders = catchAsync(async (req, res, next) => {
     required: false
   })
   
-  if (!userOrders) {
+  if (!userOrders || userOrders.length === 0) {
     return next(new AppError('not orders found for this user', 400))
   }
 

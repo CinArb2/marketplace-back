@@ -48,7 +48,9 @@ const cartValidations = [
 const productValidations = [
   body('title')
     .notEmpty()
-    .withMessage('Title cannot be empty'),
+    .withMessage('Title cannot be empty')
+    .isLength({ max: 50 })
+    .withMessage('Title cannot be longer than 50 characters'),
   body('description')
     .notEmpty()
     .withMessage('Description cannot be empty')
@@ -84,6 +86,12 @@ const categoryValidations = [
 ]
 
 const updateProdValidations = [
+  body('title')
+    .isLength({ max: 50 })
+    .withMessage('Title cannot be longer than 50 characters'),
+  body('description')
+    .isLength({ max: 1000 })
+    .withMessage('description must be maximum 100 characters'),
   body('price')
     .optional()
     .isFloat({min: 0})

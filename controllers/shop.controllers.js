@@ -20,7 +20,7 @@ const createShop = catchAsync(async (req, res, next) => {
   const shopUser = await Shop.findOne({
     where: { userId: userSession.id, status: 'active' }
   })
-
+  
   if (shopUser) {
     return next(new AppError('You already have a shop active', 400))
   }
@@ -67,6 +67,7 @@ const getShops = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     shops: shopResolved,
+    
   });
 })
 
@@ -182,13 +183,23 @@ const getCurrentShop = catchAsync(async (req, res, next) => {
   const { userSession } = req
   const { user } = req.query
   let shop;
-
+  
   if (user === 'me') {
+    
     shop = await Shop.findOne({
       where: {
         userId: userSession.id,
         status: 'active'
-      }
+      },
+      include: {
+        model: Product,
+        where: { status: 'active' },
+        include: [
+          { model: ProductImg }
+        ],
+        required: false
+      },
+      required: false
     })
   }
 
@@ -206,10 +217,29 @@ const getCurrentShop = catchAsync(async (req, res, next) => {
   shop.logoImg = urlLogo;
   shop.coverImg = urlCover;
 
-  if (!shop) {
-    return next(new AppError('user doesnt have any active shop', 404))
-  }
 
+  // Get all product' imgs
+  const productPromises = shop.products.map(async product => {
+    // Get imgs from firebase
+    const prodImgsPromises = product.productImgs.map(async prodImg => {
+      const imgRef = ref(storage, prodImg.imgUrl);
+      const url = await getDownloadURL(imgRef);
+
+      // Update postImgUrl prop
+      prodImg.imgUrl = url;
+      return prodImg;
+    });
+
+    // Resolve pending promises
+    const prodImgsResolved = await Promise.all(prodImgsPromises);
+    product.productImgs = prodImgsResolved;
+
+    return product;
+  });
+
+  const productResolved = await Promise.all(productPromises);
+
+  shop.products = productResolved
   res.status(200).json({ shop })
  })
 

@@ -58,7 +58,7 @@ const userHasShop = catchAsync(async (req, res, next) => {
   const { userSession } = req
 
   const userShop = await Shop.findOne({
-    where: { userId: userSession.id }
+    where: { userId: userSession.id, status: 'active' }
   })
 
   if (!userShop) {
